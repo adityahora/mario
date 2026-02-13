@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <title>💕 Journey to Aaditya 💕</title>
+
+    <!-- Favicon (browser tab icon) -->
+    <link rel="icon" type="image/png" href="thumbnail.jpg">
+    <!-- Open Graph tags for social media previews -->
+    <meta property="og:url" content="https://adityahora.github.io/mario/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="💕 Kripa's Journey to Aaditya 💕">
+    <meta property="og:description" content="Open this special page for Kripa ❤️">
+    <meta property="og:image" content="https://adityahora.github.io/mario/thumbnail.jpg">
+
+    <!-- Twitter card support (optional) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://adityahora.github.io/mario/thumbnail.jpg">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- ===== TITLE SCREEN ===== -->
+    <div id="title-screen" class="screen active">
+        <div class="title-bg">
+            <div class="parallax-clouds" id="title-clouds"></div>
+            <div class="parallax-mountains"></div>
+        </div>
+        <div class="title-content">
+            <h1 class="game-title">Kripa's Journey</h1>
+            <h2 class="game-subtitle">~ To Aaditya ~</h2>
+            <div class="title-characters">
+                <div class="title-char kripa-char">
+                    <img src="kripa.png" alt="Kripa" onerror="this.style.display='none'; this.parentElement.querySelector('.fallback').style.display='flex';">
+                    <div class="fallback" style="display:none;">🧍‍♀️</div>
+                    <span>Kripa</span>
+                </div>
+                <div class="title-hearts">💕💖💕</div>
+                <div class="title-char aaditya-char">
+                    <img src="aaditya.png" alt="Aaditya" onerror="this.style.display='none'; this.parentElement.querySelector('.fallback').style.display='flex';">
+                    <div class="fallback" style="display:none;">🧍‍♂️</div>
+                    <span>Aaditya</span>
+                </div>
+            </div>
+            <button class="btn-main" onclick="showTutorial()">▶ Start Game</button>
+            <div class="title-footer">Use keyboard or touch controls</div>
+        </div>
+    </div>
+
+    <!-- ===== TUTORIAL SCREEN ===== -->
+    <div id="tutorial-screen" class="screen">
+        <div class="tutorial-box">
+            <h2>How to Play 💖</h2>
+            <div class="tutorial-sections">
+                <div class="tutorial-section">
+                    <h3>🎮 Controls</h3>
+                    <div class="control-grid">
+                        <div class="control-item">
+                            <div class="key-display">W</div>
+                            <span>Move Right</span>
+                        </div>
+                        <div class="control-item">
+                            <div class="key-display">S</div>
+                            <span>Move Left</span>
+                        </div>
+                        <div class="control-item">
+                            <div class="key-display">Space</div>
+                            <span>Jump</span>
+                        </div>
+                        <div class="control-item">
+                            <div class="key-display">📱 Touch</div>
+                            <span>On-screen buttons</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tutorial-section">
+                    <h3>🎯 Goal</h3>
+                    <p>Collect <strong>ALL 🌹 roses</strong> in each level to unlock the path to <strong>Aaditya</strong>! He'll be waiting at the end, but you can only reach him once every rose is collected. 💕</p>
+                </div>
+                <div class="tutorial-section">
+                    <h3>⚠️ Watch Out!</h3>
+                    <div class="tutorial-items">
+                        <div class="tut-item"><span class="tut-icon">🦀</span> Enemies - Jump on them to squish, or dodge them!</div>
+                        <div class="tut-item"><span class="tut-icon">🕳️</span> Gaps - Don't fall off the edge!</div>
+                        <div class="tut-item"><span class="tut-icon">🌹</span> Roses - Collect ALL to unlock the goal!</div>
+                        <div class="tut-item"><span class="tut-icon">💖</span> Hearts - Pick up for extra lives!</div>
+                    </div>
+                </div>
+                <div class="tutorial-section">
+                    <h3>❤️ Lives & Checkpoints</h3>
+                    <p>You have <strong>5 lives</strong>. If you lose them all, don't worry — each level is a <strong>checkpoint</strong>! You'll restart the current level, not the whole game. 💪</p>
+                </div>
+            </div>
+            <button class="btn-main" onclick="startGame()">Let's Go! 💖</button>
+        </div>
+    </div>
+
+    <!-- ===== GAME SCREEN ===== -->
+    <div id="game-screen" class="screen">
+        <!-- HUD -->
+        <div class="hud">
+            <div class="hud-left">
+                <div class="hud-lives" id="hud-lives">
+                    <span>❤️</span><span>❤️</span><span>❤️</span><span>❤️</span><span>❤️</span>
+                </div>
+            </div>
+            <div class="hud-center">
+                <div class="hud-level" id="hud-level">Level 1</div>
+                <div class="hud-level-name" id="hud-level-name">The Garden of Love</div>
+            </div>
+            <div class="hud-right">
+                <div class="hud-score">⭐ <span id="hud-score">0</span></div>
+                <div class="hud-roses-display">🌹 <span id="hud-roses">0 / 0</span></div>
+                <div class="hud-goal-status" id="hud-goal-status">🔒 Collect all roses</div>
+            </div>
+        </div>
+
+        <!-- Game Canvas -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Level Intro Overlay -->
+        <div class="level-intro" id="level-intro">
+            <div class="level-intro-box">
+                <h2 id="level-intro-title">Level 1</h2>
+                <p id="level-intro-name">The Garden of Love</p>
+                <p id="level-intro-hint" class="level-hint"></p>
+            </div>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div class="mobile-controls" id="mobile-controls">
+            <div class="mobile-left">
+                <button class="mobile-btn" id="btn-left" aria-label="Move Left">◀</button>
+                <button class="mobile-btn" id="btn-right" aria-label="Move Right">▶</button>
+            </div>
+            <div class="mobile-right">
+                <button class="mobile-btn mobile-btn-jump" id="btn-jump" aria-label="Jump">▲</button>
+            </div>
+        </div>
+
+        <!-- Pause Button -->
+        <button class="pause-btn" id="pause-btn" onclick="togglePause()" aria-label="Pause">⏸️</button>
+    </div>
+
+    <!-- ===== PAUSE OVERLAY ===== -->
+    <div id="pause-overlay" class="overlay">
+        <div class="overlay-box">
+            <h2>⏸️ Paused</h2>
+            <button class="btn-main" onclick="togglePause()">▶ Resume</button>
+            <button class="btn-secondary" onclick="restartLevel()">🔄 Restart Level</button>
+            <button class="btn-secondary" onclick="quitToTitle()">🏠 Main Menu</button>
+        </div>
+    </div>
+
+    <!-- ===== LEVEL COMPLETE OVERLAY ===== -->
+    <div id="level-complete-overlay" class="overlay">
+        <div class="overlay-box level-complete-box">
+            <h2 id="lc-title">Level Complete! 💖</h2>
+            <p id="lc-message" class="lc-msg"></p>
+            <div class="lc-stats">
+                <div class="lc-stat"><span>⭐</span><span id="lc-score">0</span></div>
+                <div class="lc-stat"><span>⏱️</span><span id="lc-time">0s</span></div>
+            </div>
+            <button class="btn-main" id="lc-next-btn" onclick="nextLevel()">Next Level →</button>
+        </div>
+    </div>
+
+    <!-- ===== GAME OVER OVERLAY ===== -->
+    <div id="gameover-overlay" class="overlay">
+        <div class="overlay-box gameover-box">
+            <h2>💔 Game Over</h2>
+            <p class="go-msg">Don't give up! Aaditya is still waiting at the same spot! 💕</p>
+            <button class="btn-main" onclick="retryGame()">Retry This Level ❤️</button>
+            <button class="btn-secondary" onclick="quitToTitle()">Main Menu</button>
+        </div>
+    </div>
+
+    <!-- ===== VICTORY SCREEN ===== -->
+    <div id="victory-screen" class="screen">
+        <canvas id="victory-canvas"></canvas>
+        <div class="victory-content" id="victory-content">
+            <div class="victory-characters">
+                <div class="v-char v-kripa">
+                    <img src="kripa.png" alt="Kripa" onerror="this.textContent='🧍‍♀️'; this.style.fontSize='4rem';">
+                </div>
+                <div class="v-heart-big">💖</div>
+                <div class="v-char v-aaditya">
+                    <img src="aaditya.png" alt="Aaditya" onerror="this.textContent='🧍‍♂️'; this.style.fontSize='4rem';">
+                </div>
+            </div>
+            <h1 class="victory-title">You Made It! 🎉</h1>
+            <div class="victory-message" id="victory-message"></div>
+            <div class="victory-stats">
+                <div class="v-stat"><span>⭐ Score</span><span id="v-score">0</span></div>
+                <div class="v-stat"><span>❤️ Lives Left</span><span id="v-lives">0</span></div>
+            </div>
+            <button class="btn-main victory-btn" onclick="quitToTitle()">Play Again 💕</button>
+        </div>
+    </div>
+
+    <script src="sounds.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
