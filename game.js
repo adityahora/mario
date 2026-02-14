@@ -51,7 +51,8 @@ let player = {
     won: false,
     frame: 0,
     animTimer: 0,
-    hurtCooldown: 0
+    hurtCooldown: 0,
+    ridingPlatform: null
 };
 
 // ===== LEVEL DATA =====
@@ -64,7 +65,7 @@ const LEVEL_DATA = [
     // ===== LEVEL 1: The Garden of Love =====
     {
         name: "The Garden of Love",
-        hint: "A gentle stroll through the garden 🌸",
+        hint: "Ride the moving platforms & survive the garden gauntlet! 🌸",
         bgGradient: ['#1a0533', '#2d1b4e', '#4a2860'],
         bgStars: true,
         groundColor: '#3d6b35',
@@ -73,17 +74,36 @@ const LEVEL_DATA = [
         brickTopColor: '#c49b26',
         message: "Through every flower and every path, Kripa's heart leads her closer to Aaditya. 🌸",
         map: [
-            '                                                                                                                     ',
-            '                                                                                                                     ',
-            '                                                                                                                     ',
-            '                     4                                                4                                               ',
-            '                  3333333                                            3333333                                          ',
-            '        4      333        333                           33333                    E      333                           ',
-            '     3333333                      3333333            333     333  33333      333         333   333    33333             ',
-            '  P     E           E          E        E         5              E                                      E         G   ',
-            '11111111111  1111111111  1111111111  11111111  1111111111111111111111  1111  1111111111111  1111111111111  11111111111111',
-            '11111111111  1111111111  1111111111  11111111  1111111111111111111111  1111  1111111111111  1111111111111  11111111111111',
-            '11111111111  1111111111  1111111111  11111111  1111111111111111111111  1111  1111111111111  1111111111111  11111111111111',
+            '                                                                                                                                                          ',
+            '                                                                                                                                                          ',
+            '              4                                                                                   4                                                       ',
+            '           3333333                                                                             3333333                                4                   ',
+            '        333       333                                       4                               333   E  333                           3333333                ',
+            '                                   4        5            3333333                          333                             4      333   E  333              ',
+            '     33333              E        333333   33333       333   E   333       33333              333            E           33333  333            333  333      ',
+            '  P     E          E                        E     E                  E          E       E       E       E            E                           E     G   ',
+            '11111111111   11111111111   1111111111  11111111  111111111    1111111111111   111111  11111111111111   111111  111111111111   11111   11   111   1111111111111',
+            '11111111111   11111111111   1111111111  11111111  111111111    1111111111111   111111  11111111111111   111111  111111111111   11111   11   111   1111111111111',
+            '11111111111   11111111111   1111111111  11111111  111111111    1111111111111   111111  11111111111111   111111  111111111111   11111   11   111   1111111111111',
+        ],
+        movingPlatforms: [
+            // MP0: Bridge over first 3-wide gap at cols 11-13
+            { x: 11*40, y: 7*40, w: 120, startX: 10*40, endX: 14*40, speed: 0.9 },
+            // MP1: Vertical lift to reach the high rose (col ~39)
+            { x: 39*40, y: 6*40, w: 100, startY: 6*40, endY: 3*40, speed: 0.55, startX: 39*40, endX: 39*40 },
+            // MP2: Bridge over 4-wide gap at cols 59-62
+            { x: 59*40, y: 7*40, w: 100, startX: 57*40, endX: 64*40, speed: 1.0 },
+            // MP3: Vertical lift to high rose near col 82
+            { x: 82*40, y: 6*40, w: 100, startY: 6*40, endY: 3*40, speed: 0.6, startX: 82*40, endX: 82*40 },
+            // === END GAUNTLET ===
+            // MP4: Fast bridge over gauntlet gap at cols 124-126
+            { x: 124*40, y: 7*40, w: 80, startX: 122*40, endX: 128*40, speed: 1.4 },
+            // MP5: Elevated bridge in gauntlet at cols 132-134
+            { x: 132*40, y: 6*40, w: 80, startX: 130*40, endX: 136*40, speed: 1.2 },
+        ],
+        platformEnemies: [
+            { x: 39*40 + 20, y: 5*40, platformIndex: 1 },
+            { x: 132*40 + 10, y: 5*40, platformIndex: 5 },
         ],
         enemies: [],
         items: [],
@@ -92,7 +112,7 @@ const LEVEL_DATA = [
     // ===== LEVEL 2: The Moonlit Bridge =====
     {
         name: "The Moonlit Bridge",
-        hint: "Careful on the bridges! 🌙",
+        hint: "The bridges are treacherous — time every jump! 🌙",
         bgGradient: ['#0a0020', '#15003a', '#2a0055'],
         bgStars: true,
         groundColor: '#4a3860',
@@ -101,17 +121,39 @@ const LEVEL_DATA = [
         brickTopColor: '#9a5888',
         message: "Even across the darkest bridges, love lights the way forward. 🌙💫",
         map: [
-            '                                                                                                                                       ',
-            '                                                                                                                                       ',
-            '                                                                                                                                       ',
-            '                          4                                                                           4                                ',
-            '                       3333333                                                                     3333333                              ',
-            '          4         333       333                  4              5         33333               333    E                                 ',
-            '       3333333   333             333            3333333        33333     333     333         333         333    33333                     ',
-            '  P       E                        E         E       E     E                       E                             E                 G    ',
-            '1111111111111  111  111111111111  111111  11111111  1111111111  11  1111111111111  111111  1111111111111  1111  111111111111111111111111111',
-            '1111111111111  111  111111111111  111111  11111111  1111111111  11  1111111111111  111111  1111111111111  1111  111111111111111111111111111',
-            '1111111111111  111  111111111111  111111  11111111  1111111111  11  1111111111111  111111  1111111111111  1111  111111111111111111111111111',
+            '                                                                                                                                                                                    ',
+            '                                                                                                                                                                                    ',
+            '                                                    4                                                        4                                                                      ',
+            '                    4                             3333333                                                  3333333                                          4                        ',
+            '                 3333333                       333   E  333                             4                                               4                3333333                      ',
+            '          4   333       333        4        333               5          33333       3333333             333       333        4       333   E  333      333       333                  ',
+            '       3333333             333  3333333  333       E        33333     333     333                     333             333  3333333  333            333       E       333  33333         ',
+            '  P       E                        E          E          E                      E            E     E                         E                              E              E     G    ',
+            '1111111111111   111   1111111111  111111111  11111111  11111111   11  11111111111   111111  111111111111   11  1111111111111   1111   1111111111   111   111   11111   11   111111111111 ',
+            '1111111111111   111   1111111111  111111111  11111111  11111111   11  11111111111   111111  111111111111   11  1111111111111   1111   1111111111   111   111   11111   11   111111111111 ',
+            '1111111111111   111   1111111111  111111111  11111111  11111111   11  11111111111   111111  111111111111   11  1111111111111   1111   1111111111   111   111   11111   11   111111111111 ',
+        ],
+        movingPlatforms: [
+            // MP0: Bridge over 3-wide gap near start
+            { x: 14*40, y: 7*40, w: 80, startX: 13*40, endX: 17*40, speed: 1.1 },
+            // MP1: Vertical lift to high rose
+            { x: 42*40, y: 6*40, w: 100, startY: 6*40, endY: 3*40, speed: 0.5, startX: 42*40, endX: 42*40 },
+            // MP2: Horizontal over gap cols 62-63
+            { x: 62*40, y: 6*40, w: 80, startX: 60*40, endX: 65*40, speed: 1.2 },
+            // MP3: Vertical lift to high rose near col 80
+            { x: 80*40, y: 6*40, w: 100, startY: 6*40, endY: 3*40, speed: 0.65, startX: 80*40, endX: 80*40 },
+            // === END GAUNTLET ===
+            // MP4: Fast bridge in gauntlet zone
+            { x: 136*40, y: 7*40, w: 80, startX: 134*40, endX: 139*40, speed: 1.5 },
+            // MP5: Second gauntlet bridge
+            { x: 142*40, y: 6*40, w: 80, startX: 140*40, endX: 145*40, speed: 1.3 },
+            // MP6: Third gauntlet bridge (fast)
+            { x: 150*40, y: 7*40, w: 80, startX: 148*40, endX: 153*40, speed: 1.6 },
+        ],
+        platformEnemies: [
+            { x: 42*40 + 20, y: 5*40, platformIndex: 1 },
+            { x: 62*40 + 10, y: 5*40, platformIndex: 2 },
+            { x: 142*40 + 10, y: 5*40, platformIndex: 5 },
         ],
         enemies: [],
         items: [],
@@ -120,7 +162,7 @@ const LEVEL_DATA = [
     // ===== LEVEL 3: The Sky of Forever =====
     {
         name: "The Sky of Forever",
-        hint: "The final challenge! Don't look down! ☁️",
+        hint: "The ultimate test! Survive the sky gauntlet to reach Aaditya! ☁️",
         bgGradient: ['#1a0030', '#350055', '#5a0080'],
         bgStars: true,
         groundColor: '#5a3075',
@@ -129,17 +171,47 @@ const LEVEL_DATA = [
         brickTopColor: '#aa66aa',
         message: "Against all odds, through every challenge, your love conquered it all. 💖✨",
         map: [
-            '                                                                                                                                                               ',
-            '                                                                                                                                                               ',
-            '                                                                                                                                                               ',
-            '               4                           4                                         4                                                                         ',
-            '            3333333                      3333333                                   3333333                                                                       ',
-            '     4   333    E  333                333       333       4          33333       333   E  333                    5          33333                                ',
-            '  3333333             333  33333   333             333  33333     333   333   333           333   33333    333   33333      333   333   33333                       ',
-            '  P  E                       E         E              E     E                    E                  E                 E                   E              E    G   ',
-            '11111111  11  1111111111  111111111  111111111  11  111111  1111111111  11  111111111111  111  1111111111111  111  111111111  1111  1111111111  1111  11111111111111 ',
-            '11111111  11  1111111111  111111111  111111111  11  111111  1111111111  11  111111111111  111  1111111111111  111  111111111  1111  1111111111  1111  11111111111111 ',
-            '11111111  11  1111111111  111111111  111111111  11  111111  1111111111  11  111111111111  111  1111111111111  111  111111111  1111  1111111111  1111  11111111111111 ',
+            '                                                                                                                                                                                                                ',
+            '                                                                                                                                                                                                                ',
+            '                                             4                                                                      4                                                                                           ',
+            '                4                         3333333                        4                                        3333333                                               4                                        ',
+            '             3333333                   333   E  333                   3333333                                  333   E  333                               4           3333333                                    ',
+            '      4   333       333      4      333               4      5     333       333                33333       333             333        4               333   E  333  333   E  333                                 ',
+            '   3333333             333  33333        E          33333  33333                 333  33333  333     333  333                  333   3333333    E     333            333            333   333     333   333          ',
+            '   P  E                        E                E                      E                        E                                     E          E                                      E       E       E    G    ',
+            '11111111   11   1111111111  111111111  111111  111111   11  11111111111   11  111111111111   111  1111111111111   11   111111111   1111  1111111111   111   1111   111   111111   11   111   11111   11   111111111111',
+            '11111111   11   1111111111  111111111  111111  111111   11  11111111111   11  111111111111   111  1111111111111   11   111111111   1111  1111111111   111   1111   111   111111   11   111   11111   11   111111111111',
+            '11111111   11   1111111111  111111111  111111  111111   11  11111111111   11  111111111111   111  1111111111111   11   111111111   1111  1111111111   111   1111   111   111111   11   111   11111   11   111111111111',
+        ],
+        movingPlatforms: [
+            // MP0: Bridge over gap cols 8-10
+            { x: 8*40, y: 7*40, w: 80, startX: 7*40, endX: 12*40, speed: 1.1 },
+            // MP1: Vertical lift to high rose near col 37
+            { x: 37*40, y: 6*40, w: 100, startY: 6*40, endY: 3*40, speed: 0.5, startX: 37*40, endX: 37*40 },
+            // MP2: Bridge over gap cols 55-56
+            { x: 55*40, y: 7*40, w: 80, startX: 53*40, endX: 58*40, speed: 1.3 },
+            // MP3: Vertical to high rose near col 70
+            { x: 70*40, y: 6*40, w: 100, startY: 6*40, endY: 2*40, speed: 0.6, startX: 70*40, endX: 70*40 },
+            // MP4: Bridge over gap cols 91-92
+            { x: 91*40, y: 7*40, w: 80, startX: 89*40, endX: 94*40, speed: 1.2 },
+            // === END GAUNTLET — 5 moving platforms in rapid succession ===
+            // MP5: Gauntlet bridge 1
+            { x: 132*40, y: 7*40, w: 80, startX: 130*40, endX: 135*40, speed: 1.5 },
+            // MP6: Gauntlet bridge 2 (elevated)
+            { x: 139*40, y: 6*40, w: 80, startX: 137*40, endX: 142*40, speed: 1.4 },
+            // MP7: Gauntlet bridge 3
+            { x: 147*40, y: 7*40, w: 80, startX: 145*40, endX: 150*40, speed: 1.6 },
+            // MP8: Gauntlet bridge 4 (elevated)
+            { x: 155*40, y: 6*40, w: 80, startX: 153*40, endX: 158*40, speed: 1.3 },
+            // MP9: Final bridge to goal
+            { x: 163*40, y: 7*40, w: 80, startX: 161*40, endX: 166*40, speed: 1.7 },
+        ],
+        platformEnemies: [
+            { x: 37*40 + 20, y: 5*40, platformIndex: 1 },
+            { x: 55*40 + 10, y: 6*40, platformIndex: 2 },
+            { x: 70*40 + 20, y: 5*40, platformIndex: 3 },
+            { x: 139*40 + 10, y: 5*40, platformIndex: 6 },
+            { x: 155*40 + 10, y: 5*40, platformIndex: 8 },
         ],
         enemies: [],
         items: [],
@@ -163,7 +235,7 @@ class Enemy {
         this.animTimer = 0;
     }
 
-    update(tiles) {
+    update(tiles, mPlatforms) {
         if (!this.alive) {
             this.deathTimer--;
             return this.deathTimer > 0;
@@ -171,6 +243,28 @@ class Enemy {
 
         this.animTimer++;
         if (this.animTimer % 15 === 0) this.frame = 1 - this.frame;
+
+        // If enemy is assigned to a moving platform, ride it
+        if (this.onMovingPlatform !== undefined && mPlatforms && mPlatforms[this.onMovingPlatform]) {
+            const mp = mPlatforms[this.onMovingPlatform];
+            this.x += mp.dx;
+            this.y = mp.y - this.h; // sit on top
+
+            // Patrol on the moving platform surface
+            this.x += this.vx;
+            // Clamp to platform edges
+            if (this.x < mp.x + 2) {
+                this.x = mp.x + 2;
+                this.vx *= -1;
+            }
+            if (this.x + this.w > mp.x + mp.w - 2) {
+                this.x = mp.x + mp.w - this.w - 2;
+                this.vx *= -1;
+            }
+            this.onGround = true;
+            this.vy = 0;
+            return true;
+        }
 
         // Apply gravity to enemies just like the player
         this.vy += GRAVITY;
@@ -318,11 +412,96 @@ class Particle {
     }
 }
 
+// ===== MOVING PLATFORM CLASS =====
+class MovingPlatform {
+    constructor(x, y, w, startX, endX, speed, startY, endY) {
+        this.x = x;
+        this.y = y;
+        this.w = w;         // width in pixels
+        this.h = 10;        // thin platform
+        this.startX = startX !== undefined ? startX : x;
+        this.endX = endX !== undefined ? endX : x;
+        this.startY = startY !== undefined ? startY : y;
+        this.endY = endY !== undefined ? endY : y;
+        this.speed = speed || 1;
+        this.dx = 0;        // frame delta x (for carrying entities)
+        this.dy = 0;        // frame delta y (for carrying entities)
+        this.t = 0;         // interpolation parameter 0..1
+        this.direction = 1; // 1 = forward, -1 = backward
+    }
+
+    update() {
+        const prevX = this.x;
+        const prevY = this.y;
+
+        this.t += this.speed * 0.008 * this.direction;
+        if (this.t >= 1) { this.t = 1; this.direction = -1; }
+        if (this.t <= 0) { this.t = 0; this.direction = 1; }
+
+        // Smooth easing for natural movement
+        const ease = this.t; // linear for predictable gameplay
+        this.x = this.startX + (this.endX - this.startX) * ease;
+        this.y = this.startY + (this.endY - this.startY) * ease;
+
+        this.dx = this.x - prevX;
+        this.dy = this.y - prevY;
+    }
+
+    draw(ctx) {
+        const dx = this.x - camera.x;
+        const dy = this.y - camera.y;
+
+        // Platform body - glowing pink
+        ctx.fillStyle = 'rgba(255, 107, 157, 0.35)';
+        ctx.fillRect(dx, dy, this.w, this.h);
+        ctx.fillStyle = '#ff6b9d';
+        ctx.fillRect(dx, dy, this.w, 3);
+
+        // Moving indicator arrows
+        ctx.fillStyle = 'rgba(255,200,220,0.5)';
+        const arrowPhase = Math.sin(Date.now() * 0.005) * 0.5 + 0.5;
+        if (this.startX !== this.endX) {
+            // Horizontal arrows
+            const ax = dx + this.w / 2 - 6 + arrowPhase * 4;
+            ctx.beginPath();
+            ctx.moveTo(ax, dy + 5);
+            ctx.lineTo(ax + 5, dy + 2);
+            ctx.lineTo(ax + 5, dy + 8);
+            ctx.fill();
+            const ax2 = dx + this.w / 2 + 2 - arrowPhase * 4;
+            ctx.beginPath();
+            ctx.moveTo(ax2 + 5, dy + 5);
+            ctx.lineTo(ax2, dy + 2);
+            ctx.lineTo(ax2, dy + 8);
+            ctx.fill();
+        }
+        if (this.startY !== this.endY) {
+            // Vertical arrows
+            const ay = dy + 3 + arrowPhase * 2;
+            ctx.beginPath();
+            ctx.moveTo(dx + this.w / 2, ay - 3);
+            ctx.lineTo(dx + this.w / 2 - 4, ay + 2);
+            ctx.lineTo(dx + this.w / 2 + 4, ay + 2);
+            ctx.fill();
+        }
+
+        // Glow effect underneath
+        ctx.fillStyle = 'rgba(255, 107, 157, 0.08)';
+        ctx.fillRect(dx, dy + this.h, this.w, 6);
+
+        // Edge dots
+        ctx.fillStyle = '#ffb8d0';
+        ctx.fillRect(dx + 2, dy + 4, 3, 3);
+        ctx.fillRect(dx + this.w - 5, dy + 4, 3, 3);
+    }
+}
+
 // ===== PARSED LEVEL RUNTIME =====
 let tiles = [];
 let enemies = [];
 let items = [];
 let particles = [];
+let movingPlatforms = [];
 let goalPos = { x: 0, y: 0 };
 let levelWidth = 0;
 let levelHeight = 0;
@@ -338,6 +517,7 @@ function parseLevel(levelIndex) {
     items = [];
     particles = [];
     tiles = [];
+    movingPlatforms = [];
     totalRoses = 0;
     collectedRoses = 0;
     player.hurtCooldown = 0;
@@ -390,6 +570,26 @@ function parseLevel(levelIndex) {
     // Pad rows
     for (let row = 0; row < tiles.length; row++) {
         while (tiles[row].length < levelWidth) tiles[row].push(0);
+    }
+
+    // Create moving platforms from level data
+    if (data.movingPlatforms) {
+        for (const mp of data.movingPlatforms) {
+            movingPlatforms.push(new MovingPlatform(
+                mp.x, mp.y, mp.w,
+                mp.startX, mp.endX, mp.speed,
+                mp.startY, mp.endY
+            ));
+        }
+    }
+
+    // Create enemies on moving platforms
+    if (data.platformEnemies) {
+        for (const pe of data.platformEnemies) {
+            const e = new Enemy(pe.x, pe.y);
+            e.onMovingPlatform = pe.platformIndex;
+            enemies.push(e);
+        }
     }
 }
 
@@ -461,6 +661,24 @@ function updatePlayer() {
     player.onGround = false;
     player.y += player.vy;
     resolveVertical();
+
+    // Moving platform check — after normal collision
+    player.ridingPlatform = null;
+    if (player.vy >= 0 || player.onGround) {
+        for (let mp of movingPlatforms) {
+            const playerBottom = player.y + player.h;
+            const playerRight = player.x + player.w;
+            // Check if player is on top of this moving platform
+            if (playerRight > mp.x + 4 && player.x < mp.x + mp.w - 4 &&
+                playerBottom >= mp.y && playerBottom <= mp.y + mp.h + 6) {
+                player.y = mp.y - player.h;
+                player.vy = 0;
+                player.onGround = true;
+                player.ridingPlatform = mp;
+                break;
+            }
+        }
+    }
 
     // Fell off the map?
     if (player.y > levelHeight * TILE + 100) {
@@ -984,6 +1202,7 @@ function drawCrab(ctx, x, y, w, h, frame, flipped) {
 }
 
 function drawEntities() {
+    for (let mp of movingPlatforms) mp.draw(ctxG);
     for (let item of items) item.draw(ctxG);
     for (let e of enemies) e.draw(ctxG);
     for (let p of particles) p.draw(ctxG);
@@ -996,8 +1215,20 @@ function gameLoop() {
     // Only update physics when actively playing
     if (gameState === 'playing') {
         frameCount++;
+
+        // Update moving platforms FIRST so dx/dy are ready
+        for (let mp of movingPlatforms) mp.update();
+
         updatePlayer();
-        enemies = enemies.filter(e => e.update(tiles));
+
+        // Carry player with moving platform AFTER updatePlayer detects riding
+        if (player.ridingPlatform) {
+            player.x += player.ridingPlatform.dx;
+            player.y += player.ridingPlatform.dy;
+        }
+
+        // Update enemies — pass movingPlatforms for riding
+        enemies = enemies.filter(e => e.update(tiles, movingPlatforms));
         items = items.filter(i => i.update());
         particles = particles.filter(p => p.update());
         checkCollisions();
